@@ -14,6 +14,7 @@ class EmailsCollector(Email):
 
     def handle(self):
         try:
+            # debug sample
             # print(self._db.get_records('SELECT * FROM some_emails WHERE id BETWEEN %s AND %s', [100, 100]))
             # return
 
@@ -26,8 +27,12 @@ class EmailsCollector(Email):
             # update `domain` field
             self.set_domain_value(self._TABLE_EMAILS)
 
-            # return stats
+            stats = {
+                'Total emails': (self._db.get_record(f'SELECT COUNT(*) FROM {self._TABLE_EMAILS}', dict=False)[0]),
+                'Total domains': (self._db.get_record(f'SELECT COUNT(DISTINCT domain) FROM {self._TABLE_EMAILS}', dict=False)[0]),
+            }
 
+            return stats
         except Exception as error:
             fn = __name__
             fn = os.path.basename(inspect.getframeinfo(inspect.currentframe()).filename)

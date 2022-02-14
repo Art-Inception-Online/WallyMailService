@@ -2,6 +2,7 @@ from sys import argv
 import time
 from emails_collector import EmailsCollector
 from init import db
+from pprint import pprint
 
 
 start_time = time.time()
@@ -23,7 +24,7 @@ if __name__ == '__main__':
 
     elif command == 'collect':
         print('collecting unique emails..')
-        EmailsCollector().handle()
+        pprint(EmailsCollector().handle())
 
     elif command == 'filter':
         print('filtering emails..')
