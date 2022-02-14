@@ -1,38 +1,10 @@
 from sys import argv
 import time
-from db_connection import db
 from emails_collector import EmailsCollector
+from init import db
 
-reset = False
-db = db()
-conn = None
 
-# Restart connection attempt permanently
-while True:
-    try:
-        conn, error = next(db) if not reset else db.send('restart')
-
-        if not conn:
-            raise Exception(error)
-
-        break
-    except Exception as error:
-        # print("ERROR: Database connection failed")
-        print("ERROR", error)
-
-        reset = True
-
-        print("")
-        time.sleep(5)
-
-# print(conn)
-# # print(next(cnx))
-# cursor = conn.cursor(dictionary=True)
-# query = ("SELECT NOW() as time_now")
-# cursor.execute(query)
-# print(cursor.fetchone())
-# # print(cnx)
-
+start_time = time.time()
 
 if __name__ == '__main__':
     # print('arguments: ', argv)
@@ -51,7 +23,7 @@ if __name__ == '__main__':
 
     elif command == 'collect':
         print('collecting unique emails..')
-        EmailsCollector(conn).handle()
+        EmailsCollector().handle()
 
     elif command == 'filter':
         print('filtering emails..')
@@ -63,3 +35,6 @@ if __name__ == '__main__':
 # next(db, None)
 next(db)
 # db.send('close')
+
+# https://stackoverflow.com/a/1557584/1565790
+print("--- %s seconds ---" % (int((time.time() - start_time) * 10) / 10))
