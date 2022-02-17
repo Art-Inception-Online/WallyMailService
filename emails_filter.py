@@ -17,10 +17,12 @@ class EmailsFilter(Email):
             self.filter_by_domains()
 
             stats = {
-                'Total valid emails': (self._db.get_record(f'SELECT COUNT(*) FROM {self._TABLE_EMAILS} '
-                                                           f'WHERE valid <> "0"', dict=False)[0]),
-                'Total valid domains': (self._db.get_record(f'SELECT COUNT(DISTINCT domain) FROM {self._TABLE_EMAILS} '
-                                                            f'valid <> "0"', dict=False)[0]),
+                'Total valid emails':
+                    (self._db.get_record(f'SELECT COUNT(*) FROM {self._TABLE_EMAILS} '
+                                         f'WHERE valid <> 0 OR valid IS NULL', dict=False)[0]),
+                'Total valid domains':
+                    (self._db.get_record(f'SELECT COUNT(DISTINCT domain) FROM {self._TABLE_EMAILS} '
+                                         f'WHERE valid <> 0 OR valid IS NULL', dict=False)[0]),
             }
 
             return stats
