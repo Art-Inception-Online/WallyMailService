@@ -28,7 +28,7 @@ if __name__ == '__main__':
 
     elif command == 'filter':
         print('filtering emails..')
-        pprint(EmailsFilter().handle())
+        pprint(EmailsFilter().handle(True))
 
     elif command == 'send':
         print('sending emails..')
