@@ -1,9 +1,9 @@
 from sys import argv
 import time
-from emails_collector import EmailsCollector
 from init import db
 from pprint import pprint
-
+from emails_collector import EmailsCollector
+from emails_filter import EmailsFilter
 
 start_time = time.time()
 
@@ -28,6 +28,7 @@ if __name__ == '__main__':
 
     elif command == 'filter':
         print('filtering emails..')
+        pprint(EmailsFilter().handle())
 
     elif command == 'send':
         print('sending emails..')

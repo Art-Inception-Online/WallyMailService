@@ -5,8 +5,7 @@ class Database(object):
     __cursor = None
 
     def execute(self, query, params: tuple = (), fetch_one=False, fetch_all=False, dict=True, commit=False):
-        # print('query: ', query)
-        print('.', end='')
+        print('query: ', query)
 
         self.__cursor = conn.cursor(dictionary=dict, buffered=True)
         self.__cursor.execute(query, params)
@@ -30,7 +29,8 @@ class Database(object):
         conn.commit()
 
     def __del__(self):
-        self.__cursor.close()
+        if self.__cursor:
+            self.__cursor.close()
 
 
 # def execute_query(query, params: tuple = (), single_record=True):
