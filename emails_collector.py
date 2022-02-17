@@ -27,6 +27,9 @@ class EmailsCollector(Email):
             # update `domain` field
             self.set_domain_value(self._TABLE_EMAILS)
 
+            # delete entries without domain
+            self._db.execute(f'DELETE FROM {self._TABLE_EMAILS} WHERE domain = "" OR domain IS NULL', commit=True)
+
             stats = {
                 'Total emails': (self._db.get_record(f'SELECT COUNT(*) FROM {self._TABLE_EMAILS}', dict=False)[0]),
                 'Total domains': (self._db.get_record(f'SELECT COUNT(DISTINCT domain) FROM {self._TABLE_EMAILS}', dict=False)[0]),
