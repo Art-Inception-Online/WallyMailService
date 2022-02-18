@@ -4,6 +4,10 @@ from init import db
 from pprint import pprint
 from emails_collector import EmailsCollector
 from emails_filter import EmailsFilter
+import logging
+
+
+
 
 start_time = time.time()
 

@@ -1,6 +1,5 @@
 import dns.resolver
 import socket
-from pprint import pprint
 
 
 def get_host_by_name(domain):
@@ -66,3 +65,24 @@ def get_mx_records(domain):
         return [str(x.exchange) for x in mx_records]
     except:
         return None
+
+
+def validate_domain(domain):
+    print(f'{domain}'.ljust(25), end='')
+
+    # get domain ip or mx records
+    ip = get_host_by_name(domain)
+
+    if not ip:
+        print('!get_host_by_name'.ljust(20), end='')
+        if not get_mx_records(domain):
+            print('!get_mx_records'.ljust(20), end='')
+            return False
+
+    print(f'{ip}', end='')
+
+    return True
+
+
+def get_domain(email):
+    return email[email.rfind('@') + 1:] if email.rfind('@') > -1 else None

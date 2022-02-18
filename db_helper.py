@@ -5,7 +5,7 @@ class Database(object):
     __cursor = None
 
     def execute(self, query, params: tuple = (), fetch_one=False, fetch_all=False, dict=True, commit=False):
-        print('query: ', query)
+        # print('query: ', query)
 
         self.__cursor = conn.cursor(dictionary=dict, buffered=True)
         self.__cursor.execute(query, params)

@@ -1,8 +1,9 @@
 import os
 import inspect
 from config import EmailStatus as Status
-from email import Email
-from utils import validate_domain
+from email_service import Email
+from net_helper import *
+from smtp_checker import SMTPChecker
 from pprint import pprint
 
 
@@ -17,7 +18,8 @@ class EmailsFilter(Email):
             self.filter_by_domains()
 
             # Step 2: check each email for existence
-            # if filter_by_email_existence:
+            if filter_by_email_existence:
+                self.filter_by_email_existence()
 
             return self.stats()
         except Exception as error:
@@ -42,6 +44,21 @@ class EmailsFilter(Email):
             query = f'UPDATE {self._TABLE_EMAILS} SET valid = %s, status = %s WHERE domain = %s'
             self._db.execute(query, (None if valid else '0', Status.DOMAIN_HANDLED.value, domain), commit=True)
 
+    def filter_by_email_existence(self):
+        """
+        Filter emails for existence on mail server
+        """
+
+        raise Exception('Not implemented')
+
+        emails = self._db.get_records(f'SELECT email FROM {self._TABLE_EMAILS} WHERE valid IS NULL '
+                                      f'ORDER BY weight DESC, email DESC '
+                                      f' LIMIT 1', dict=False)
+
+        for email, in emails:
+            is_valid = SMTPChecker(debug=0, timeout=1, max_iteration=5).validate(email)
+            print(f'{email} is valid: {is_valid}')
+
     def stats(self):
         return {
             'Total valid emails':
@@ -51,6 +68,3 @@ class EmailsFilter(Email):
                 (self._db.get_record(f'SELECT COUNT(DISTINCT domain) FROM {self._TABLE_EMAILS} '
                                      f'WHERE valid <> 0 OR valid IS NULL', dict=False)[0]),
         }
-
-    def filter_by_email_existence(self):
-        pass

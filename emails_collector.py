@@ -1,6 +1,6 @@
 import os
 import inspect
-from email import Email
+from email_service import Email
 from init import conn
 from pprint import pprint
 
