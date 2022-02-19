@@ -80,6 +80,7 @@ def validate_domain(domain):
             return False
 
     print(f'{ip}', end='')
+    print('')
 
     return True
 
