@@ -1,5 +1,5 @@
 import time
-from db_connection import db
+from helpers.db_connection import db
 
 reset = False
 db = db()

@@ -2,10 +2,9 @@ import logging
 from smtplib import SMTP
 from typing import List
 import ssl
-import time
 import re
 
-from net_helper import get_domain, get_mx_records
+from utils.net import get_domain, get_mx_records
 
 log = logging.getLogger(name=__name__)
 
@@ -99,7 +98,7 @@ class SMTPChecker:
             if re.search('no.*recipient', message.decode(), re.IGNORECASE):
                 return False
 
-            # else, email address might be valid!
+            # else, mail address might be valid!
             return True
         except Exception as error:
             log.debug(f'error >: {error}')

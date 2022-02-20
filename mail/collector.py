@@ -1,8 +1,6 @@
 import os
 import inspect
-from email_service import Email
-from init import conn
-from pprint import pprint
+from .service import Email
 
 
 class EmailsCollector(Email):
@@ -20,6 +18,8 @@ class EmailsCollector(Email):
 
             # empty table
             self._db.execute(f'TRUNCATE {self._TABLE_EMAILS}', commit=True)
+
+            self._db.execute(f'TRUNCATE {self._TABLE_DOMAINS}', commit=True)
 
             # insert all emails into one
             self.collect(self.get_tables())
@@ -41,44 +41,6 @@ class EmailsCollector(Email):
             fn = os.path.basename(inspect.getframeinfo(inspect.currentframe()).filename)
             ln = inspect.getframeinfo(inspect.currentframe()).lineno
             print(f'ERROR ({fn}:{ln})', error)
-
-    def get_tables_v1(self):
-        # WORKING Query (displays correctly):
-        #   SHOW TABLES LIKE '\_%'
-
-        # INVALID Query:
-        #   SHOW TABLES NOT LIKE '\_%'
-
-        # NOT working MySQL query properly:
-        #   SHOW TABLES WHERE 'Tables_in_<table-name>' LIKE '\_%'
-
-        # INVALID Query:
-        #   SHOW TABLES WHERE 'Tables_in_<table-name>' LIKE '\_%' ESCAPE '\'
-
-        # WORKING QUERY
-        #    SHOW TABLE STATUS WHERE Name NOT LIKE "\_%";
-
-        # cursor = self.__conn.cursor(dictionary=True)
-        cursor = conn.cursor()
-        # query = 'SHOW TABLES'
-        # DEBUG VERSION
-        query = 'SHOW TABLE STATUS WHERE Name NOT LIKE "\_%" AND Name LIKE "mbox_emails"'
-        # query = "SHOW TABLE STATUS WHERE Name NOT LIKE '\_%'"
-        cursor.execute(query)
-        # print(cursor.fetchone())
-
-        # for row in cursor:
-        #     print(row)
-
-        tables = list()
-
-        for table, *others in cursor:
-            if table[0] == '_':
-                continue
-
-            tables.append(table)
-
-        return tables
 
     def get_tables(self):
         tables = self._db.get_records('SHOW TABLE STATUS WHERE Name NOT LIKE "\_%"')

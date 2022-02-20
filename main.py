@@ -1,12 +1,11 @@
 from sys import argv
 import time
 from pprint import pprint
-import logging
 
-from init import db
-from emails_collector import EmailsCollector
-from emails_filter import EmailsFilter
-from emails_sender import EmailsSender
+from helpers.init import db
+from mail.collector import EmailsCollector
+from mail.filter import EmailsFilter
+from mail.sender import EmailsSender
 
 start_time = time.time()
 
@@ -31,7 +30,7 @@ if __name__ == '__main__':
 
     elif command == 'filter':
         print('filtering emails..')
-        pprint(EmailsFilter().handle(True))
+        pprint(EmailsFilter(threads=100).handle(True))
 
     elif command == 'send':
         EmailsSender(threads=10, total_send_emails=1).handle()

@@ -1,3 +1,5 @@
+import re
+
 import dns.resolver
 import socket
 
@@ -68,21 +70,24 @@ def get_mx_records(domain):
 
 
 def validate_domain(domain):
-    print(f'{domain}'.ljust(25), end='')
+    """ check domain by ip or mx record(s)"""
+    data = {'valid': False, 'ip': None, 'mx': None}
 
-    # get domain ip or mx records
-    ip = get_host_by_name(domain)
+    # not use `import validators` as it's redundant
+    if not re.search('^[0-9a-z]', domain, re.IGNORECASE):
+        return data
 
-    if not ip:
-        print('!get_host_by_name'.ljust(20), end='')
-        if not get_mx_records(domain):
-            print('!get_mx_records'.ljust(20), end='')
-            return False
+    data['ip'] = get_host_by_name(domain)
 
-    print(f'{ip}', end='')
-    print('')
+    if not data['ip']:
+        data['mx'] = get_mx_records(domain)
 
-    return True
+        if not data['mx']:
+            return data
+
+    data['valid'] = True
+
+    return data
 
 
 def get_domain(email):
