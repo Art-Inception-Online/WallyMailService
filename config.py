@@ -17,6 +17,17 @@ db = {
     'autocommit': os.getenv('DB_AUTOCOMMIT').lower() in ('true', '1', 't'),
 }
 
+mail = {
+    'mailer': os.getenv('MAIL_MAILER'),
+    'host': os.getenv('MAIL_HOST'),
+    'port': os.getenv('MAIL_PORT'),
+    'username': os.getenv('MAIL_USERNAME'),
+    'password': os.getenv('MAIL_PASSWORD'),
+    'encryption': os.getenv('MAIL_ENCRYPTION'),
+    'from_address': os.getenv('MAIL_FROM_ADDRESS'),
+    'from_name': os.getenv('MAIL_FROM_NAME'),
+}
+
 
 class EmailStatus(Enum):
     DOMAIN_HANDLED = 'domain_handled'
