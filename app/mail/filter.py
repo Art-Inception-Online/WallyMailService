@@ -11,8 +11,6 @@ from utils.smtp_checker import SMTPChecker
 
 
 class EmailsFilter(Email):
-    __cache_domains_path = 'cache/domains.txt';
-
     def __init__(self, threads=10):
         self.__threads = threads
         super().__init__()
@@ -53,10 +51,12 @@ class EmailsFilter(Email):
                     f'GROUP BY t1.domain ORDER BY count(*) DESC ' \
                     f'LIMIT 1'
             cursor.execute(query)
-            domain, = cursor.fetchone()
+            row = cursor.fetchone()
 
-            if not domain:
+            if not row:
                 return
+
+            domain, = row
 
             # insert into domains, as validating it
             query = f'INSERT INTO {self._TABLE_DOMAINS} SET domain = %s ON DUPLICATE KEY UPDATE id=id'
