@@ -17,3 +17,18 @@ python main.py filter
 ```python
 python main.py send
 ```
+
+### Prep
+```python
+# create virtual environment
+python -m venv .venv
+
+# activate (*nix)
+source ./.venv/bin/activate
+
+# activate (win)
+.\.venv\scripts\activate.bat
+
+# install requirements
+pip install -r requirements.txt
+```
