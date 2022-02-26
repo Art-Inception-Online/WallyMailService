@@ -2,12 +2,12 @@ import inspect
 import json
 import os
 
-from utils import thread
-from config import EmailStatus as Status
-from helpers.db_connection import db
-from mail.service import Email
-from utils.net import *
-from utils.smtp_checker import SMTPChecker
+from app.utils import thread
+from app.config import EmailStatus as Status
+from app.helpers.db_connection import db
+from app.mail.service import Email
+from app.utils.net import *
+from app.utils.smtp_checker import SMTPChecker
 
 
 class EmailsFilter(Email):
@@ -44,45 +44,55 @@ class EmailsFilter(Email):
         conn, error = next(kwargs.get("db")())
 
         while True:
-            cursor = conn.cursor(dictionary=False, buffered=True)
-            query = f'SELECT t1.domain FROM {self._TABLE_EMAILS} t1 ' \
-                    f'LEFT JOIN {self._TABLE_DOMAINS} t2 ON t2.domain = t1.domain ' \
-                    f'WHERE t1.status IS NULL AND t2.id IS NULL ' \
-                    f'GROUP BY t1.domain ORDER BY count(*) DESC ' \
-                    f'LIMIT 1'
-            cursor.execute(query)
-            row = cursor.fetchone()
+            try:
+                cursor = conn.cursor(dictionary=False, buffered=True)
 
-            if not row:
-                return
+                # lock tables
+                # to prevent duplicate entry handling
+                cursor.execute(f'LOCK TABLES {self._TABLE_EMAILS} WRITE, {self._TABLE_EMAILS} AS t1 WRITE, '
+                               f'{self._TABLE_DOMAINS} WRITE, {self._TABLE_DOMAINS} AS t2 WRITE')
 
-            domain, = row
+                query = f'SELECT t1.domain FROM {self._TABLE_EMAILS} t1 ' \
+                        f'LEFT JOIN {self._TABLE_DOMAINS} t2 ON t2.domain = t1.domain ' \
+                        f'WHERE t1.status IS NULL AND t2.id IS NULL ' \
+                        f'GROUP BY t1.domain ORDER BY count(*) DESC ' \
+                        f'LIMIT 1'
+                cursor.execute(query)
+                row = cursor.fetchone()
 
-            # insert into domains, as validating it
-            query = f'INSERT INTO {self._TABLE_DOMAINS} SET domain = %s ON DUPLICATE KEY UPDATE id=id'
-            cursor.execute(query, (domain,))
-            # conn.commit()
+                if not row:
+                    return
 
-            data = validate_domain(domain)
+                domain, = row
 
-            # THREAD SAFE PRINT
-            content = f'{thread_i}'.ljust(6).rjust(9) + '|' \
-                      + f'{domain}'.ljust(23).rjust(24) + '|' \
-                      + f'{data["valid"]}'.ljust(8).rjust(11) + '|' \
-                      + f'{data["ip"]}'.ljust(17).rjust(18) + '|' \
-                      + f'{data["mx"]}'.ljust(15).rjust(16)
+                # insert into domains, as validating it
+                query = f'INSERT INTO {self._TABLE_DOMAINS} SET domain = %s ON DUPLICATE KEY UPDATE id=id'
+                cursor.execute(query, (domain,))
+                # conn.commit()
 
-            print("{0}\n".format(content), end='')
+                data = validate_domain(domain)
 
-            query = f'UPDATE {self._TABLE_DOMAINS} SET valid = %s, ip = %s, mx = %s WHERE domain = %s'
-            cursor.execute(query, ('1' if data['valid'] else '0', data["ip"],
-                                   None if not data["mx"] else json.dumps(data["mx"]), domain))
+                # THREAD SAFE PRINT
+                content = f'{thread_i}'.ljust(6).rjust(9) + '|' \
+                          + f'{domain}'.ljust(23).rjust(24) + '|' \
+                          + f'{data["valid"]}'.ljust(8).rjust(11) + '|' \
+                          + f'{data["ip"]}'.ljust(17).rjust(18) + '|' \
+                          + f'{data["mx"]}'.ljust(15).rjust(16)
 
-            # Update related emails with proper `valid` & `status` field values
-            query = f'UPDATE {self._TABLE_EMAILS} SET valid = %s, status = %s WHERE domain = %s'
-            cursor.execute(query, (None if data['valid'] else '0', Status.DOMAIN_HANDLED.value, domain))
+                print("{0}\n".format(content), end='')
 
-            conn.commit()
+                query = f'UPDATE {self._TABLE_DOMAINS} SET valid = %s, ip = %s, mx = %s WHERE domain = %s'
+                cursor.execute(query, ('1' if data['valid'] else '0', data["ip"],
+                                       None if not data["mx"] else json.dumps(data["mx"]), domain))
+
+                # Update related emails with proper `valid` & `status` field values
+                query = f'UPDATE {self._TABLE_EMAILS} SET valid = %s, status = %s WHERE domain = %s'
+                cursor.execute(query, (None if data['valid'] else '0', Status.DOMAIN_HANDLED.value, domain))
+
+                conn.commit()
+            finally:
+                # Unlock tables
+                cursor.execute(f'UNLOCK TABLES')
 
     def filter_by_email_existence(self):
         """
