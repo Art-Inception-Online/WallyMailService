@@ -1,4 +1,4 @@
-from helpers.init import conn
+from app.helpers.init import conn
 
 
 class Database(object):
