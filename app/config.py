@@ -26,6 +26,7 @@ mail = {
     'encryption': os.getenv('MAIL_ENCRYPTION'),
     'from_address': os.getenv('MAIL_FROM_ADDRESS'),
     'from_name': os.getenv('MAIL_FROM_NAME'),
+    'fake_recipient': os.getenv('MAIL_FAKE_RECIPIENT'),
 }
 
 
