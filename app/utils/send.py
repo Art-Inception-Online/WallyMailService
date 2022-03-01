@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import uuid
@@ -6,6 +7,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email import utils
 import smtplib
+from typing import Dict
 
 from app.config import mail as config
 
@@ -14,7 +16,7 @@ image_source_pattern = r'(<img.*\n*.*src=")([^(http?s:)][^\'"]*)'
 image_source_placeholder = '{cid}'
 
 
-def send(to, subject, body_html, body_text_plain='', debug_level=0):
+def send(to, subject, body_html, body_text_plain='', user_variables: Dict = {}, debug_level=0):
     to = to if not config['fake_recipient'] else config['fake_recipient']
 
     msg = MIMEMultipart()
@@ -23,6 +25,9 @@ def send(to, subject, body_html, body_text_plain='', debug_level=0):
     msg['To'] = to
     msg['Date'] = utils.formatdate(localtime=1)
     msg['Message-ID'] = utils.make_msgid()
+
+    user_variables['message-id'] = utils.make_msgid().strip('<>')
+    msg.add_header('X-Mailgun-Variables', json.dumps(user_variables))
 
     body_html = __prepare_message(msg, body_html)
     body = MIMEText(body_html, "html", _charset="utf-8")

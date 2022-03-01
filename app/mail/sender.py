@@ -71,9 +71,9 @@ class EmailsSender(Email):
                 subject, html_message = self.__get_subject_and_message(message_substitution_data)
                 alternative_message = self.__get_alternative_message(message_substitution_data)
 
-                msg = send(email, subject, html_message, alternative_message)
+                msg = send(email, subject, html_message, alternative_message, {'campaign-id': self.__campaign_id})
 
-                self.__set_email_as_sent(email, subject, msg['Message-ID'], cursor)
+                self.__set_email_as_sent(email, subject, msg['Message-ID'].strip('<>'), cursor)
                 conn.commit()
 
                 print("{0}\n".format(content), end='')
