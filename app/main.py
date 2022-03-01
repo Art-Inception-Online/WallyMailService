@@ -33,8 +33,8 @@ if __name__ == '__main__':
         pprint(EmailsFilter(threads=100).handle(True))
 
     elif command == 'send':
-        EmailsSender(threads=10, total_send_emails=1).handle()
         print('sending emails..')
+        pprint(EmailsSender(campaign_id=1, threads=10, total_send_emails=1).handle())
 
 # close connection
 # next(db, None)
