@@ -2,6 +2,7 @@ from sys import argv
 import time
 from pprint import pprint
 
+from config import EmailFilterType
 from helpers.init import db
 from mail.collector import EmailsCollector
 from mail.filter import EmailsFilter
@@ -28,13 +29,22 @@ if __name__ == '__main__':
         pprint(EmailsCollector().handle())
 
     elif command == '--filter':
-        print('filtering emails..')
-        pprint(EmailsFilter(threads=100).handle(True))
+        print('Start filtering emails..')
+
+        filter_type = EmailFilterType(get(argv, 2)) if (EmailFilterType.has_value(get(argv, 2))) \
+            else EmailFilterType.DOMAIN
+        threads_count = int(get(argv, 3, 1))
+
+        print(f'filter_type: {filter_type.value}')
+        print(f'threads_count: {threads_count}')
+
+        pprint(EmailsFilter(threads=threads_count).handle(filter_by=filter_type))
 
     elif command == '--send':
         campaign_id = int(get(argv, 2, 1))
         total_send_emails = int(get(argv, 3, 1))
         threads_count = int(get(argv, 4, 1))
+
         print('sending emails..')
         print(f'campaign_id: {campaign_id}')
         print(f'total_send_emails: {total_send_emails}')

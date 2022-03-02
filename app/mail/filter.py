@@ -9,23 +9,30 @@ from utils import thread
 from utils.net import *
 from utils.smtp_checker import SMTPChecker
 
+from config import EmailFilterType
+
 
 class EmailsFilter(Email):
     def __init__(self, threads=10):
         self.__threads = threads
         super().__init__()
 
-    def handle(self, filter_by_email_existence=False):
+    def handle(self, filter_by: EmailFilterType = EmailFilterType.DOMAIN):
         try:
-            print(f'Handling:\n Thread  |         Domain         |   VALID   |        IP        |       MX       ')
+            if filter_by == EmailFilterType.DOMAIN:
+                print('Filtering by domain:')
+                print(f'Handling:\n Thread  |         Domain         |   VALID   |        IP        |       MX       ')
 
-            # Step1: filter emails by domains
-            # each thread should receive new db instance
-            thread.run(self.__threads, self.__filter_by_domains, kwargs={'db': db})
+                # each thread should receive new db instance
+                thread.run(self.__threads, self.__filter_by_domains, kwargs={'db': db})
 
-            # Step 2: check each mail for existence
-            # if filter_by_email_existence:
-            #     self.filter_by_email_existence()
+            elif filter_by == EmailFilterType.SMTP:
+                print('Filtering by SMTP: NOT IMPLEMENTED YET!')
+                # self.__filter_by_smtp()
+                pass
+
+            elif filter_by == EmailFilterType.API:
+                print('Filtering by API: NOT IMPLEMENTED YET!')
 
             return self.stats()
         except Exception as error:
@@ -94,7 +101,7 @@ class EmailsFilter(Email):
                 # Unlock tables
                 cursor.execute(f'UNLOCK TABLES')
 
-    def filter_by_email_existence(self):
+    def __filter_by_smtp(self):
         """
         Filter emails for existence on mail server
         """

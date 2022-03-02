@@ -39,7 +39,7 @@ class EmailStatus(Enum):
 
 
 class EmailFilterType(EnumExtended):
-    BY_DOMAIN = 'domain'
-    BY_SMTP = 'smtp'
-    BY_API = 'api'
+    DOMAIN = 'domain'
+    SMTP = 'smtp'
+    API = 'api'
 
