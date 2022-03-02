@@ -6,13 +6,12 @@ from helpers.init import db
 from mail.collector import EmailsCollector
 from mail.filter import EmailsFilter
 from mail.sender import EmailsSender
+from utils.safe_getter import get
 
 start_time = time.time()
 
 if __name__ == '__main__':
-    # print('arguments: ', argv)
-
-    commands = ('--help', 'collect', 'filter', 'send')
+    commands = ('--help', '--collect', '--filter', '--send')
 
     command = None if (len(argv) < 2) else (argv[1] if argv[1] in commands else None)
 
@@ -24,17 +23,24 @@ if __name__ == '__main__':
         print('filter      : Filter collected emails if valid')
         print('send        : Send emails')
 
-    elif command == 'collect':
+    elif command == '--collect':
         print('collecting unique emails..')
         pprint(EmailsCollector().handle())
 
-    elif command == 'filter':
+    elif command == '--filter':
         print('filtering emails..')
         pprint(EmailsFilter(threads=100).handle(True))
 
-    elif command == 'send':
+    elif command == '--send':
+        campaign_id = int(get(argv, 2, 1))
+        total_send_emails = int(get(argv, 3, 1))
+        threads_count = int(get(argv, 4, 1))
         print('sending emails..')
-        pprint(EmailsSender(campaign_id=1, threads=10, total_send_emails=1).handle())
+        print(f'campaign_id: {campaign_id}')
+        print(f'total_send_emails: {total_send_emails}')
+        print(f'threads_count: {threads_count}')
+
+        EmailsSender(campaign_id=campaign_id, total_send_emails=total_send_emails, threads=threads_count).handle()
 
 # close connection
 # next(db, None)

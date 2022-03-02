@@ -3,21 +3,22 @@ import time
 from pathlib import Path
 from string import Template
 
-from app.config import EmailStatus
-from app.helpers.db_connection import db
-from app.mail.service import Email
-from app.utils import thread
-from app.utils.send import send
+from config import EmailStatus
+from helpers.db_connection import db
+from mail.service import Email
+from utils import thread
+from utils.send import send
 
 
 class EmailsSender(Email):
     __already_sent_emails = 0
 
-    def __init__(self, campaign_id: int, threads=10, total_send_emails=10,
+    def __init__(self, campaign_id: int, total_send_emails=10, threads=10,
                  check_email_for_existence=False, wait: float = 0):
         self.__campaign_id = campaign_id
         self.__threads = threads
         self.__total_send_emails = total_send_emails
+        # @TODO - needs to be implemented via smtp_checker.py
         self.__check_email_for_existence = check_email_for_existence
         self.__wait = wait
 
@@ -87,7 +88,7 @@ class EmailsSender(Email):
 
     def __get_subject_and_message(self, data: dict = {}):
         """read message from template and substitute data"""
-        template = Template(Path(f'templates/campaign-{self.__campaign_id}.html').read_text(encoding="UTF-8"))
+        template = Template(Path(f'app/templates/campaign-{self.__campaign_id}.html').read_text(encoding="UTF-8"))
 
         # data replacement
         message = template.substitute(data)
@@ -106,7 +107,7 @@ class EmailsSender(Email):
     def __get_alternative_message(self, data: dict = {}):
         """alternative message for text/plain"""
         try:
-            template = Template(Path(f'templates/campaign-{self.__campaign_id}.txt').read_text(encoding="UTF-8"))
+            template = Template(Path(f'app/templates/campaign-{self.__campaign_id}.txt').read_text(encoding="UTF-8"))
             return template.substitute(data)
         except FileNotFoundError:
             return

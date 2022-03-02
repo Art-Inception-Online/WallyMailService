@@ -2,12 +2,12 @@ import inspect
 import json
 import os
 
-from app.config import EmailStatus as Status
-from app.helpers.db_connection import db
-from app.mail.service import Email
-from app.utils import thread
-from app.utils.net import *
-from app.utils.smtp_checker import SMTPChecker
+from config import EmailStatus as Status
+from helpers.db_connection import db
+from mail.service import Email
+from utils import thread
+from utils.net import *
+from utils.smtp_checker import SMTPChecker
 
 
 class EmailsFilter(Email):

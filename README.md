@@ -2,33 +2,51 @@
 Wally Mail Service (Gather, Filter, Send emails)
 
 **Gather emails from different table sources**
-```python
-python main.py collect
+
+### Usage
+
+**Prepare virtual environment**
+```shell
+python -m venv .venv
 ```
 
-**Filter valid emails by domain and/or email existence (using SMTP conn)**<br>
-*using threads*
+**Activate virtual environment**
+```shell
+# *nix
+source ./.venv/bin/activate
+# win
+.\.venv\scripts\activate.bat
+```
+
+**Install requirements**
+```shell
+pip install -r requirements.txt
+```
+
+### Commands
+
+**Gather data from different sources**
 ```python
-python main.py filter
+python app/main.py --collect
+```
+
+**Filter valid emails by domain and/or email existence (using SMTP connection)**<br>
+*uses threads*
+```python
+python app/main.py --filter
 ```
 
 **Send emails via SMTP**<br>
-*using threads*
+*uses threads*
 ```python
-python main.py send
-```
+python app/main.py --send
 
-### Prep
-```python
-# create virtual environment
-python -m venv .venv
+# define campaign template
+python app/main.py --send 1
 
-# activate (*nix)
-source ./.venv/bin/activate
+# define campaign template & total emails should be sent
+python app/main.py --send 1 100
 
-# activate (win)
-.\.venv\scripts\activate.bat
-
-# install requirements
-pip install -r requirements.txt
+# define campaign template & total emails should be sent & total threads should be used
+python app/main.py --send 1 100 25
 ```

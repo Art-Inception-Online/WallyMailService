@@ -4,7 +4,7 @@ from typing import List
 import ssl
 import re
 
-from app.utils.net import get_domain, get_mx_records
+from utils.net import get_domain, get_mx_records
 
 log = logging.getLogger(name=__name__)
 

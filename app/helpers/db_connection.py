@@ -1,5 +1,5 @@
 import mysql.connector
-import app.config as config
+import config as config
 
 cnx, error = None, None
 

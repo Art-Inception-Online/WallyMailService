@@ -9,7 +9,7 @@ from email import utils
 import smtplib
 from typing import Dict
 
-from app.config import mail as config
+from config import mail as config
 
 # html might contain src attr on a new line
 image_source_pattern = r'(<img.*\n*.*src=")([^(http?s:)][^\'"]*)'
@@ -73,7 +73,7 @@ def __prepare_message(msg: MIMEMultipart, message):
 
     for image_source in image_sources:
         # image path should be relative to the project root!!!
-        image_id, image_attachment = get_image_attachment(f'../{image_source}')
+        image_id, image_attachment = get_image_attachment(f'{image_source}')
 
         msg.attach(image_attachment)
 

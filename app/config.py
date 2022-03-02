@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from enum import Enum
 
-load_dotenv('.env')
+load_dotenv('app/.env')
 
 # https://dev.mysql.com/doc/connector-python/en/connector-python-connectargs.html
 db = {

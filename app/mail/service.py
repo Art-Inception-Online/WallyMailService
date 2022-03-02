@@ -1,4 +1,4 @@
-from app.helpers.db import Database
+from helpers.db import Database
 
 
 class Email:
