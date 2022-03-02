@@ -2,6 +2,8 @@ import os
 from dotenv import load_dotenv
 from enum import Enum
 
+from utils.enum_extended import EnumExtended
+
 load_dotenv('app/.env')
 
 # https://dev.mysql.com/doc/connector-python/en/connector-python-connectargs.html
@@ -34,4 +36,10 @@ class EmailStatus(Enum):
     DOMAIN_HANDLED = 'domain_handled'
     EMAIL_HANDLING = 'email_handling'
     EMAIL_HANDLED = 'email_handled'
+
+
+class EmailFilterType(EnumExtended):
+    BY_DOMAIN = 'domain'
+    BY_SMTP = 'smtp'
+    BY_API = 'api'
 
