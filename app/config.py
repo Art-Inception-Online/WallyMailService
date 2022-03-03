@@ -42,4 +42,5 @@ class EmailFilterType(EnumExtended):
     DOMAIN = 'domain'
     SMTP = 'smtp'
     API = 'api'
+    EVENTS = 'events'
 
