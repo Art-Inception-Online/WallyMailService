@@ -108,9 +108,7 @@ class EmailsFilter(Email):
                 cursor.execute(f'UNLOCK TABLES')
 
     def __filter_by_smtp(self, *args, **kwargs):
-        """
-        Filter emails for existence on mail server
-        """
+        """Filter emails for existence on mail server"""
         thread_i = 'n/a' if not 'thread' in kwargs else kwargs.get("thread")
 
         conn, error = next(kwargs.get("db")())
@@ -145,6 +143,10 @@ class EmailsFilter(Email):
             print(f'{email} is valid: {is_valid}')
 
     def __filter_by_webhook_events(self):
+        """
+        Filter emails based on webhook events,
+        where event is a negative value: {"complained", "unsubscribed", "failed"}
+        """
         query = f'UPDATE {self._TABLE_EMAILS} t1 ' \
                 f'INNER JOIN ( ' \
                     f'SELECT email, GROUP_CONCAT(DISTINCT event) AS events FROM {self._TABLE_WEBHOOK_EVENTS} t2 ' \
