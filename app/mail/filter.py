@@ -1,6 +1,7 @@
 import inspect
 import json
 import os
+import time
 from pprint import pprint
 
 from config import EmailStatus as Status
@@ -10,7 +11,7 @@ from utils import thread
 from utils.net import *
 from utils.smtp_checker import SMTPChecker
 
-from config import EmailFilterType
+from config import EmailFilterType, EmailStatus
 
 
 class EmailsFilter(Email):
@@ -34,7 +35,8 @@ class EmailsFilter(Email):
 
             elif filter_by == EmailFilterType.SMTP:
                 print('Filtering by SMTP: NOT IMPLEMENTED YET!')
-                thread.run(self.__threads, self.__filter_by_smtp(), kwargs={'db': db})
+                print(f'Handling:\n Thread  |          Email          |   VALID')
+                thread.run(self.__threads, self.__filter_by_smtp, kwargs={'db': db})
                 pass
 
             elif filter_by == EmailFilterType.API:
@@ -52,7 +54,7 @@ class EmailsFilter(Email):
         Filter mail by valid (existing) domain
         by detecting Host IP or MX Record(s)
         """
-        thread_i = 'n/a' if not 'thread' in kwargs else kwargs.get("thread")
+        thread_i = 'n/a' if 'thread' not in kwargs else kwargs.get("thread")
 
         conn, error = next(kwargs.get("db")())
 
@@ -109,7 +111,7 @@ class EmailsFilter(Email):
 
     def __filter_by_smtp(self, *args, **kwargs):
         """Filter emails for existence on mail server"""
-        thread_i = 'n/a' if not 'thread' in kwargs else kwargs.get("thread")
+        thread_i = 'n/a' if 'thread' not in kwargs else kwargs.get("thread")
 
         conn, error = next(kwargs.get("db")())
 
@@ -121,26 +123,41 @@ class EmailsFilter(Email):
                 # to prevent duplicate entry handling
                 cursor.execute(f'LOCK TABLES {self._TABLE_EMAILS} WRITE, {self._TABLE_EMAILS} AS t1 WRITE')
 
-                query = f'SELECT email FROM {self._TABLE_EMAILS} t1 ' \
-                        f'LEFT JOIN {self._TABLE_DOMAINS} t2 ON t2.domain = t1.domain ' \
-                        f'WHERE t1.status IS NULL AND t2.id IS NULL ' \
-                        f'GROUP BY t1.domain ORDER BY count(*) DESC ' \
+                # closed relay!
+                # as they require authentication
+                exclude_domains = (
+                    'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'yahoo.co.uk', 'ymail.com', 'yahoo.de',
+                    'live.com', 'yandex.ru', 'mail.ru', 'rambler.ru', 'bk.ru', 'inbox.ru', 'list.ru',
+                )
+
+                query = f'SELECT email FROM {self._TABLE_EMAILS} ' \
+                        f'WHERE valid IS NULL AND status NOT IN (%s) ' \
+                        f'AND domain NOT IN ("' + '", "'.join(exclude_domains) + '") ' \
+                        f'AND smtp_checked = 0 ' \
+                        f'ORDER BY weight DESC ' \
                         f'LIMIT 1'
-                cursor.execute(query)
-                row = cursor.fetchone()
+                cursor.execute(query, (EmailStatus.EMAIL_HANDLED.value,))
+                email, = cursor.fetchone()
+
+                print(f'handling.. {email}')
+
+                # Possible values: True, False, None
+                is_valid = SMTPChecker(debug=0, timeout=3, max_iteration=10, sender="me@test.com").validate(email)
+                valid = 1 if is_valid else (0 if is_valid is False else None)
+
+                # THREAD SAFE PRINT
+                content = f'{thread_i}'.ljust(6).rjust(9) + '|' \
+                          + f'{email}'.ljust(23).rjust(25) + '|' \
+                          + f'{is_valid}'.ljust(8).rjust(11)
+                print("\n{0}\n".format(content), end='')
+
+                # Update related emails with proper `valid` & `status` field values
+                query = f'UPDATE {self._TABLE_EMAILS} SET smtp_checked = 1, valid = %s, status = %s WHERE email = %s'
+                cursor.execute(query, (valid, Status.DOMAIN_HANDLED.value, email))
+                conn.commit()
             finally:
                 # Unlock tables
                 cursor.execute(f'UNLOCK TABLES')
-
-        raise Exception('Not implemented')
-
-        emails = self._db.get_records(f'SELECT mail FROM {self._TABLE_EMAILS} WHERE valid IS NULL '
-                                      f'ORDER BY weight DESC, mail DESC '
-                                      f' LIMIT 1', dict=False)
-
-        for email, in emails:
-            is_valid = SMTPChecker(debug=0, timeout=1, max_iteration=5).validate(email)
-            print(f'{email} is valid: {is_valid}')
 
     def __filter_by_webhook_events(self):
         """
@@ -149,9 +166,9 @@ class EmailsFilter(Email):
         """
         query = f'UPDATE {self._TABLE_EMAILS} t1 ' \
                 f'INNER JOIN ( ' \
-                    f'SELECT email, GROUP_CONCAT(DISTINCT event) AS events FROM {self._TABLE_WEBHOOK_EVENTS} t2 ' \
-                    f'WHERE t2.event IN ("complained", "unsubscribed", "failed") ' \
-                    f'GROUP BY t2.email ' \
+                f'SELECT email, GROUP_CONCAT(DISTINCT event) AS events FROM {self._TABLE_WEBHOOK_EVENTS} t2 ' \
+                f'WHERE t2.event IN ("complained", "unsubscribed", "failed") ' \
+                f'GROUP BY t2.email ' \
                 f') t3 ON t3.email = t1.email ' \
                 f'SET t1.valid = 0, t1.notes = t3.events'
         self._db.execute(query, commit=True)
