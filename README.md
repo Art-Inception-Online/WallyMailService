@@ -25,7 +25,7 @@ pip install -r requirements.txt
 
 ### Commands
 
-**Gather data from different sources**
+**Gather data from different source collection**
 ```python
 python app/main.py --collect
 ```
@@ -33,7 +33,22 @@ python app/main.py --collect
 **Filter valid emails by domain and/or email existence (using SMTP connection)**<br>
 *uses threads*
 ```python
-python app/main.py --filter
+# `smtp` is by default
+python app/main.py --filter 
+# same as:
+python app/main.py --filter smtp
+
+# using 10 threads
+python app/main.py --filter smtp 10
+```
+
+**Verify (verify) emails via Mailgun API**<br>
+*uses threads*
+```python
+python app/main.py --filter api
+
+# using thread
+python app/main.py --filter api 10
 ```
 
 **Send emails via SMTP**<br>

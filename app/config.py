@@ -31,6 +31,8 @@ mail = {
     'fake_recipient': os.getenv('MAIL_FAKE_RECIPIENT'),
 }
 
+mailgun_api_key = os.getenv('MAILGUN_API_KEY')
+
 
 class EmailStatus(Enum):
     DOMAIN_HANDLED = 'domain_handled'
