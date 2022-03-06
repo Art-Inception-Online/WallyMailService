@@ -26,8 +26,14 @@ def send(to, subject, body_html, body_text_plain='', user_variables: Dict = {}, 
     msg['Date'] = utils.formatdate(localtime=1)
     msg['Message-ID'] = utils.make_msgid()
 
+    # add custom user variables
     user_variables['message-id'] = utils.make_msgid().strip('<>')
+
+    # for Mailgun
     msg.add_header('X-Mailgun-Variables', json.dumps(user_variables))
+
+    # for Sendgrid
+    msg.add_header('X-SMTPAPI', json.dumps({'unique_args': user_variables}))
 
     body_html = __prepare_message(msg, body_html)
     body = MIMEText(body_html, "html", _charset="utf-8")
