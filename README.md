@@ -30,12 +30,12 @@ pip install -r requirements.txt
 python app/main.py --collect
 ```
 
-**Filter valid emails by domain and/or email existence (using SMTP connection)**<br>
+**Filter (verify) valid emails by domain and/or email existence (using SMTP connection)**<br>
 *uses threads*
 ```python
-# `smtp` is by default
-python app/main.py --filter 
-# same as:
+python app/main.py --filter domain
+
+# using smtp
 python app/main.py --filter smtp
 
 # using 10 threads
