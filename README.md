@@ -42,7 +42,7 @@ python app/main.py --filter smtp
 python app/main.py --filter smtp 10
 ```
 
-**Verify (verify) emails via Mailgun API**<br>
+**Filter (verify) emails via Mailgun API**<br>
 *uses threads*
 ```python
 python app/main.py --filter api
