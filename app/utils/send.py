@@ -24,10 +24,14 @@ def send(to, subject, body_html, body_text_plain='', user_variables: Dict = {}, 
     msg['From'] = utils.formataddr((config['from_name'], config['from_address']))
     msg['To'] = to
     msg['Date'] = utils.formatdate(localtime=1)
-    msg['Message-ID'] = utils.make_msgid()
+    # msg['Message-ID'] = utils.make_msgid()
+
+    # change the ending part of the msg['Message-ID']
+    # to the sender's domain
+    msg['Message-ID'] = '@'.join((utils.make_msgid().split('@')[0], config['from_address'].split('@')[1] + '>'))
 
     # add custom user variables
-    user_variables['message-id'] = utils.make_msgid().strip('<>')
+    user_variables['message-id'] = msg['Message-ID'].strip('<>')
 
     # for Mailgun
     msg.add_header('X-Mailgun-Variables', json.dumps(user_variables))
