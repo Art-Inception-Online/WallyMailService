@@ -21,4 +21,6 @@ jobs:
         password: ${{ secrets.PASS }}
         script: |
           cd ${{ secrets.WORKDIR }}
+          source ./.venv/bin/activate
+          pip install -r requirements.txt
           git reset --hard HEAD && git pull origin main
