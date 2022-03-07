@@ -33,9 +33,13 @@ python app/main.py --collect
 **Filter (verify) valid emails by domain and/or email existence (using SMTP connection)**<br>
 *uses threads*
 ```python
+# filter emails by valid domain (checking for existing MX record
 python app/main.py --filter domain
 
-# using smtp
+# filter emails by webhook responses (sendgrid, mailgun)
+python app/main.py --filter events
+
+# filter emails using smtp communication response
 python app/main.py --filter smtp
 
 # using 10 threads
