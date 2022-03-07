@@ -127,12 +127,19 @@ class EmailsFilter(Email):
     def __filter_by_webhook_events(self):
         """
         Filter emails based on webhook events,
-        where event is a negative value: {"complained", "unsubscribed", "failed"}
+        where event is a negative value: {
+            # Mailgun for (https://documentation.mailgun.com/en/latest/api-events.html#event-types)
+            "rejected", "failed", "unsubscribed", "complained",
+
+            # Sendgrid for (https://docs.sendgrid.com/for-developers/tracking-events/event)
+            "dropped", "bounce", "blocked"
+        }
         """
         query = f'UPDATE {self._TABLE_EMAILS} t1 ' \
                 f'INNER JOIN ( ' \
                 f'SELECT email, GROUP_CONCAT(DISTINCT event) AS events FROM {self._TABLE_WEBHOOK_EVENTS} t2 ' \
-                f'WHERE t2.event IN ("complained", "unsubscribed", "failed") ' \
+                f'WHERE t2.event IN ("rejected", "failed", "complained", "unsubscribed", ' \
+                f'"dropped", "bounce", "blocked") ' \
                 f'GROUP BY t2.email ' \
                 f') t3 ON t3.email = t1.email ' \
                 f'SET t1.valid = 0, t1.notes = t3.events'
