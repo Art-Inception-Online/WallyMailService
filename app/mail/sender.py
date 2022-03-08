@@ -13,7 +13,7 @@ from utils.send import send
 class EmailsSender(Email):
     __already_sent_emails = 0
 
-    def __init__(self, campaign_id: int, total_send_emails=10, threads=10,
+    def __init__(self, config, campaign_id: int, total_send_emails=10, threads=10,
                  check_email_for_existence=False, wait: float = 0):
         self.__campaign_id = campaign_id
         self.__threads = threads
@@ -21,6 +21,7 @@ class EmailsSender(Email):
         # @TODO - needs to be implemented via smtp_checker.py
         self.__check_email_for_existence = check_email_for_existence
         self.__wait = wait
+        self.__config = config
 
         super().__init__()
 
@@ -72,7 +73,8 @@ class EmailsSender(Email):
                 subject, html_message = self.__get_subject_and_message(message_substitution_data)
                 alternative_message = self.__get_alternative_message(message_substitution_data)
 
-                msg = send(email, subject, html_message, alternative_message, {'campaign-id': self.__campaign_id})
+                msg = send(email, subject, html_message, alternative_message,
+                           {'campaign-id': self.__campaign_id}, config=self.__config)
 
                 self.__set_email_as_sent(email, subject, msg['Message-ID'].strip('<>'), cursor)
                 conn.commit()

@@ -9,14 +9,12 @@ from email import utils
 import smtplib
 from typing import Dict
 
-from config import mail as config
-
 # html might contain src attr on a new line
 image_source_pattern = r'(<img.*\n*.*src=")([^(http?s:)][^\'"]*)'
 image_source_placeholder = '{cid}'
 
 
-def send(to, subject, body_html, body_text_plain='', user_variables: Dict = {}, debug_level=0):
+def send(to, subject, body_html, body_text_plain='', user_variables: Dict = {}, debug_level=0, config={}):
     to = to if not config['fake_recipient'] else config['fake_recipient']
 
     msg = MIMEMultipart()

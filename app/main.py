@@ -13,11 +13,8 @@ from utils.safe_getter import get
 
 start_time = time.time()
 
-# print(config.__mailer)
-# print(config.mail)
-# pprint(config.smtp_channels)
-
 if __name__ == '__main__':
+    mail_config = config.mail
     # commands = ('--help', '--collect', '--filter', '--send')
 
     parser = argparse.ArgumentParser(description='How to use instructions',
@@ -37,15 +34,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.channel:
-        config.mail = config.get_mail_configuration(args.channel)
-
-    print('host:', config.mail['host'])
-
-    pprint(f'args data: {args}')
-    pprint(f'args.channel: {args.channel}')
-    pprint(f'args.collect: {args.collect}')
-    pprint(f'args.filter: {args.filter}')
-    pprint(f'args.send: {args.send}')
+        mail_config = config.get_mail_configuration(args.channel)
 
     if args.collect:
         print('collecting unique emails..')
@@ -76,7 +65,8 @@ if __name__ == '__main__':
         print(f'total_send_emails: {total_send_emails}')
         print(f'threads_count: {threads_count}')
 
-        EmailsSender(campaign_id=campaign_id, total_send_emails=total_send_emails, threads=threads_count).handle()
+        EmailsSender(config=mail_config, campaign_id=campaign_id, total_send_emails=total_send_emails,
+                     threads=threads_count).handle()
 
 # close connection
 # next(db, None)
