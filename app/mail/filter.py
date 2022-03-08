@@ -1,18 +1,19 @@
 import inspect
 import json
 import os
+import re
 import time
 from pprint import pprint
 
 import requests
-from config import EmailStatus as Status, mailgun_api_key
+import config
+from config import EmailFilterType, EmailStatus
 from helpers.db_connection import db
 from mail.service import Email
 from utils import thread
 from utils.net import *
 from utils.smtp_checker import SMTPChecker
 
-from config import EmailFilterType, EmailStatus
 
 
 def mailgun_verify_email(email):
@@ -22,7 +23,7 @@ def mailgun_verify_email(email):
 
     response = requests.get(
         "https://api.mailgun.net/v4/address/validate",
-        auth=("api", mailgun_api_key),
+        auth=("api", config.mailgun_api_key),
         params={"address": email})
 
     return response.json()
@@ -117,14 +118,14 @@ class EmailsFilter(Email):
 
                 # Update related emails with proper `valid` & `status` field values
                 query = f'UPDATE {self._TABLE_EMAILS} SET valid = %s, status = %s WHERE domain = %s'
-                cursor.execute(query, (None if data['valid'] else '0', Status.DOMAIN_HANDLED.value, domain))
+                cursor.execute(query, (None if data['valid'] else '0', EmailStatus.DOMAIN_HANDLED.value, domain))
 
                 conn.commit()
             finally:
                 # Unlock tables
                 cursor.execute(f'UNLOCK TABLES')
 
-    def __filter_by_webhook_events(self):
+    def __filter_by_webhook_events(self, **kwargs):
         """
         Filter emails based on webhook events,
         where event is a negative value: {
@@ -135,14 +136,26 @@ class EmailsFilter(Email):
             "dropped", "bounce", "blocked"
         }
         """
+
+        # @FIX: escape event string more accurately
+        # conn, error = next(db())
+        # conn.escape_string() - not exists
+        # print(conn.prepare_for_mysql(("d\"foo", "bar")))
+
+        query_addon = ''
+        if config.webhook_events_determining_emails_as_invalid:
+            __events = config.webhook_events_determining_emails_as_invalid
+            # query_addon = f'AND t2.event IN ("' + '", "'.join(__events) + '") '
+            query_addon = f'AND t2.event IN ("' + '", "'.join([e.replace('"', '\\"') for e in __events]) + '") '
+
         query = f'UPDATE {self._TABLE_EMAILS} t1 ' \
                 f'INNER JOIN ( ' \
                 f'SELECT email, GROUP_CONCAT(DISTINCT event) AS events FROM {self._TABLE_WEBHOOK_EVENTS} t2 ' \
-                f'WHERE t2.event IN ("rejected", "failed", "complained", "unsubscribed", ' \
-                f'"dropped", "bounce", "blocked") ' \
+                f'WHERE 1=1 {query_addon} ' \
                 f'GROUP BY t2.email ' \
                 f') t3 ON t3.email = t1.email ' \
                 f'SET t1.valid = 0, t1.notes = t3.events'
+
         self._db.execute(query, commit=True)
 
     def __filter_by_smtp(self, *args, **kwargs):
@@ -189,7 +202,7 @@ class EmailsFilter(Email):
 
                 # Update related emails with proper `valid` & `status` field values
                 query = f'UPDATE {self._TABLE_EMAILS} SET smtp_checked = 1, valid = %s, status = %s WHERE email = %s'
-                cursor.execute(query, (valid, Status.DOMAIN_HANDLED.value, email))
+                cursor.execute(query, (valid, EmailStatus.DOMAIN_HANDLED.value, email))
                 conn.commit()
             finally:
                 # Unlock tables

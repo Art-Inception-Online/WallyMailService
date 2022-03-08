@@ -52,6 +52,9 @@ mail = get_mail_configuration(default_smtp_channel)
 
 mailgun_api_key = os.getenv('MAILGUN_API_KEY')
 
+webhook_events_determining_emails_as_invalid = os.getenv('WEBHOOK_EVENTS_DETERMINING_EMAILS_AS_INVALID').split(',') \
+    if len(os.getenv('WEBHOOK_EVENTS_DETERMINING_EMAILS_AS_INVALID').strip()) else list()
+
 
 class EmailStatus(Enum):
     DOMAIN_HANDLED = 'domain_handled'
