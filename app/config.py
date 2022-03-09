@@ -24,7 +24,8 @@ db = {
 # load all smtp configurations
 smtp_channels = {}
 
-for i in range(1, 4):
+total_smtp_channels = int(os.getenv('TOTAL_SMTP_CHANNEL_COUNTS'))
+for i in range(1, total_smtp_channels + 1):
     __mailer = os.getenv(f'MAIL_{i}_MAILER')
 
     smtp_channels[__mailer] = {
