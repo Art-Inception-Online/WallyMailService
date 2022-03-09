@@ -37,6 +37,10 @@ def send(to, subject, body_html, body_text_plain='', user_variables: Dict = {}, 
     # for Sendgrid
     msg.add_header('X-SMTPAPI', json.dumps({'unique_args': user_variables}))
 
+    # for Mailjet
+    # https://dev.mailjet.com/smtp-relay/custom-headers/
+    msg.add_header('X-MJ-CustomID', json.dumps(user_variables))
+
     body_html = __prepare_message(msg, body_html)
     body = MIMEText(body_html, "html", _charset="utf-8")
     msg.attach(body)
