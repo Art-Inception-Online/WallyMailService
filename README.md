@@ -25,6 +25,31 @@ pip install -r requirements.txt
 
 ### Commands
 
+**Help**
+```shell
+$ python app/main.py --help
+```
+
+The output might look like:
+```shell
+usage: main.py [-h] [--channel relay] [--collect] [--filter [...]] [--send [...]]
+
+How to use instructions
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --channel relay  switch smtp channel
+                   possible values: ['mailgun', 'sendgrid', 'sendinblue', 'mandrillapp', 'mailjet']
+
+  --collect        collect data
+
+  --filter [ ...]  filter (validate) email entries by several options
+                   type possible values: ['domain', 'smtp', 'api', 'events']
+                   params: type, threads
+
+  --send [ ...]    send email(s)
+```
+
 **Gather data from different source collection**
 ```python
 python app/main.py --collect
@@ -58,7 +83,12 @@ python app/main.py --filter api 10
 **Send emails via SMTP**<br>
 *uses threads*
 ```python
+# send first campaign template message to one single email
 python app/main.py --send
+
+# send by switching smtp relay via additional option
+python app/main.py --send --channel mailgun
+python app/main.py --send 1 --channel sendgrid
 
 # define campaign template
 python app/main.py --send 1
