@@ -186,7 +186,13 @@ class EmailsFilter(Email):
                         f'ORDER BY weight DESC ' \
                         f'LIMIT 1'
                 cursor.execute(query, (EmailStatus.EMAIL_HANDLED.value,))
-                email, = cursor.fetchone()
+                result = cursor.fetchone()
+
+                if not result:
+                    print('No records found. SMTP filtering seams to be Completed.')
+                    return
+
+                email, others = result
 
                 print(f'handling.. {email}')
 
